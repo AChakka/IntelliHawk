@@ -16,7 +16,7 @@
 
 .sc-page {
   min-height: 82vh;
-  background: var(--bg-light);
+  background: #0d1b2a;
   padding: 82px;
   font-family: var(--font);
 }
@@ -32,7 +32,7 @@
 .sc-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 350px;
+  gap: 66px;
 }
 
 @media (max-width: 1000px) {

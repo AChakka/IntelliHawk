@@ -1,71 +1,45 @@
 /* Layout: wide line chart left, pie + summary right */
 .threat-grid {
   display: grid;
-  grid-template-columns: minmax(700px, 2fr) minmax(380px, 1fr);
-  gap: 32px;
-  width: min(1500px, 100%);
+  grid-template-columns: minmax(500px, 1.8fr) minmax(400px, 1fr); /* smaller base widths */
+  gap: 24px;            /* reduce spacing between cards */
+  width: min(1200px, 100%); /* cap total layout width */
   margin: 40px auto 0;
   align-items: start;
-  padding: 0 20px;
+  padding: 0 10px;
 }
 
-/* Cards */
 .card {
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-  padding: 24px 28px;
-  display: flex;
-  flex-direction: column;
+  background-color: #0d1b2a !important;  /* deep blue */
+  color: #ffffff !important;             /* white text */
+}
+
+.card * {
+  color: #ffffff !important;             /* ensures inner text stays visible */
 }
 
 .section-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 16px;
+  color: #ffffff !important;
 }
 
-/* Chart areas */
+/* Chart areas — reduce heights */
 .chart-wrap--main {
-  height: 440px; /* bigger line chart */
+  height: 360px; /* smaller line chart */
 }
 
 .chart-wrap--side {
-  height: 280px; /* bigger pie chart */
+  height: 220px; /* smaller pie chart */
 }
 
-/* Right card vertical stack */
-.side-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.summary h4 {
-  margin: 0 0 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.summary ul {
-  margin: 0;
-  padding-left: 18px;
-  line-height: 1.6;
-  color: #334155;
-  font-size: 0.95rem;
-}
-
-/* Responsive: stack vertically on small screens */
-@media (max-width: 1200px) {
+/* Stack vertically on smaller screens */
+@media (max-width: 1100px) {
   .threat-grid {
     grid-template-columns: 1fr;
   }
   .chart-wrap--main {
-    height: 380px;
+    height: 300px;
   }
   .chart-wrap--side {
-    height: 240px;
+    height: 200px;
   }
 }

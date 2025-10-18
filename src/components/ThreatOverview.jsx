@@ -78,7 +78,7 @@ export default function ThreatOverview() {
               <PieChart>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#0f172a",
+                    backgroundColor: "#ffffffff",
                     border: "1px solid #1e293b",
                     borderRadius: "8px",
                     color: "#fff",
@@ -88,8 +88,8 @@ export default function ThreatOverview() {
                   data={threatSplit}
                   dataKey="value"
                   nameKey="name"
-                  innerRadius={60}
-                  outerRadius={110}
+                  innerRadius={50}
+                  outerRadius={80}
                   paddingAngle={3}
                   label
                 >
