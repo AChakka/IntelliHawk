@@ -1,0 +1,70 @@
+/* AlertsPage.css */
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f7fb;
+  margin: 0;
+  padding: 0;
+  color: #1a1a1a;
+}
+
+.alerts-container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  height: calc(100vh - 40px); /* full height minus padding */
+  box-sizing: border-box;
+}
+
+.alert-panel {
+  flex: 1;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0b3d91;
+  margin-bottom: 15px;
+}
+
+/* Make table scrollable if content is large */
+.alert-table {
+  width: 100%;
+  border-collapse: collapse;
+  flex: 1;
+  overflow-y: auto;
+  display: block;
+}
+
+.alert-table thead {
+  background-color: #0b3d91;
+  color: #ffffff;
+}
+
+.alert-table th,
+.alert-table td {
+  text-align: left;
+  padding: 12px 10px;
+  min-width: 120px;
+}
+
+.alert-table tbody tr:nth-child(even) {
+  background-color: #f2f6fc;
+}
+
+.alert-table tbody tr:hover {
+  background-color: #dbe7fb;
+}
+
+.alert-table th {
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
