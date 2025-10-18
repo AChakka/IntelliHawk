@@ -21,7 +21,7 @@ export default function Sidebar({ isOpen, onClose }) {
     { name: 'Users', path: '/users', icon: faUser },
     { name: 'Roles', path: '/roles', icon: faPeopleGroup },
     { name: 'Risk Assessment', path: '/alerts', icon: faChartLine },
-    { name: 'Security Center', path: '/SecurityCenter', icon: faShieldHalved },
+    { name: 'Security Center', path: '/security-center', icon: faShieldHalved },
     { name: 'Settings', path: '/settings', icon: faGear },
     
   ];

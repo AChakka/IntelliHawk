@@ -31,7 +31,7 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/users" element={<Users />} />
               <Route path="/alerts" element={<Alerts />} />
-              <Route path="/Security Center" element={<SecurityCenter />} />
+              <Route path="/security-center" element={<SecurityCenter />} />
               <Route path="/Roles" element={<Roles />} />
               <Route path="/settings" element={<Settings />} />
             </Routes>
