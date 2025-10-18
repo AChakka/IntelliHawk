@@ -10,23 +10,24 @@ CORS(app)
 events = deque(maxlen=settings.MAX_EVENTS)
 user_data = {}
 alerts = []
-active_laptops = set()
 total_events_received = 0
 
 
+def normalize_hostname(hostname):
+    return hostname.lower().strip()
+
+
 def get_user_data(laptop_name):
+    laptop_name = normalize_hostname(laptop_name)
     if laptop_name not in user_data:
         user_data[laptop_name] = {
             'laptop_name': laptop_name,
-            'files_accessed_1h': 0,
-            'files_accessed_24h': 0,
-            'processes_started_1h': 0,
-            'processes_started_24h': 0,
-            'sensitive_files_accessed': 0,
             'suspicious_programs_used': 0,
-            'usb_devices_connected': 0,
-            'after_hours_logins': 0,
-            'network_connections': 0,
+            'failed_logins': 0,
+            'file_access_attempts': 0,
+            'sensitive_file_access': 0,
+            'suspicious_network_activity': 0,
+            'privilege_escalation_attempts': 0,
             'first_seen': datetime.now().isoformat(),
             'last_seen': None
         }
@@ -34,19 +35,14 @@ def get_user_data(laptop_name):
 
 
 def calculate_risk_score(user):
-    risk = 0.0
-    risk += min(user['suspicious_programs_used'] * 0.2, 0.4)
-    risk += min(user['sensitive_files_accessed'] * 0.1, 0.3)
-    risk += min(user['usb_devices_connected'] * 0.3, 0.5)
-    risk += min(user['after_hours_logins'] * 0.05, 0.2)
-    
-    if user['files_accessed_1h'] > 50:
-        risk += 0.2
-    
-    if user['processes_started_1h'] > 30:
-        risk += 0.1
-    
-    return min(risk, 1.0)
+    score = 0.0
+    score += min(user['suspicious_programs_used'] * 0.15, 0.40)
+    score += min(user['failed_logins'] * 0.10, 0.25)
+    score += min(user['file_access_attempts'] * 0.05, 0.20)
+    score += min(user['sensitive_file_access'] * 0.12, 0.30)
+    score += min(user['suspicious_network_activity'] * 0.08, 0.25)
+    score += min(user['privilege_escalation_attempts'] * 0.20, 0.50)
+    return min(score, 1.0)
 
 
 def process_event(event_data):
@@ -54,117 +50,124 @@ def process_event(event_data):
     
     laptop = event_data.get('hostIdentifier', 'unknown')
     event_type = event_data.get('name', '')
+    event_action = event_data.get('action', '')
     details = event_data.get('columns', {})
     
     user = get_user_data(laptop)
     user['last_seen'] = datetime.now().isoformat()
-    active_laptops.add(laptop)
     
-    if event_type in ['suspicious_processes', 'process_events', 'processes']:
-        user['processes_started_1h'] += 1
-        user['processes_started_24h'] += 1
-        
-        process_name = details.get('name', '').lower()
-        process_path = details.get('path', '').lower()
-        cmdline = details.get('cmdline', '').lower()
-        
-        if process_name in [p.lower() for p in settings.SUSPICIOUS_PROGRAMS]:
-            user['suspicious_programs_used'] += 1
-            print(f"Suspicious program: {laptop} -> {process_name}")
-        
-        if 'powershell' in process_name and cmdline:
-            for pattern in settings.POWERSHELL_SUSPICIOUS_PATTERNS:
-                if pattern.lower() in cmdline:
-                    user['suspicious_programs_used'] += 1
-                    print(f"Suspicious PowerShell: {laptop} -> {pattern}")
-                    break
+    print(f"\n{'='*60}")
+    print(f"[EVENT] Type: {event_type}")
+    print(f"        Host: {laptop}")
     
-    elif event_type == 'file_downloads':
-        file_path = details.get('path', '') or details.get('filename', '')
-        if file_path:
-            user['files_accessed_1h'] += 1
-            user['files_accessed_24h'] += 1
-            
-            if any(file_path.lower().endswith(ext) for ext in settings.EXECUTABLE_EXTENSIONS):
-                user['suspicious_programs_used'] += 1
-                print(f"Executable downloaded: {laptop} -> {file_path}")
+    if event_action == 'removed':
+        print(f"        Skipping - action is 'removed'")
+        return
     
-    elif event_type == 'logged_in_users':
-        now = datetime.now()
-        hour = now.hour
-        weekday = now.weekday()
-        
-        if hour < settings.WORK_START_HOUR or hour > settings.WORK_END_HOUR or weekday not in settings.WORK_DAYS:
-            user['after_hours_logins'] += 1
-            print(f"After hours login: {laptop} at {hour}:00")
-    
-    elif event_type in ['usb_devices', 'usb_activity']:
-        user['usb_devices_connected'] += 1
-        device_model = details.get('model', 'Unknown')
-        device_vendor = details.get('vendor', 'Unknown')
-        print(f"USB connected: {laptop} -> {device_vendor} {device_model}")
-    
-    elif event_type in ['unusual_network_connections', 'network_connections', 'socket_events', 'process_open_sockets']:
-        user['network_connections'] += 1
-        
-        remote_port = details.get('remote_port')
-        if remote_port:
-            try:
-                port_num = int(remote_port)
-                if port_num in settings.SUSPICIOUS_PORTS:
-                    user['suspicious_programs_used'] += 1
-                    print(f"Suspicious port connection: {laptop} -> Port {port_num}")
-            except (ValueError, TypeError):
-                pass
-    
-    elif event_type == 'startup_programs':
-        program_name = details.get('name', '').lower()
-        program_path = details.get('path', '').lower()
-        
-        if any(tool in program_name or tool in program_path for tool in settings.REMOTE_ACCESS_TOOLS):
-            user['suspicious_programs_used'] += 1
-            print(f"Remote access tool in startup: {laptop} -> {program_name}")
-    
-    elif event_type == 'installed_applications':
-        app_name = details.get('name', '').lower()
-        
-        if any(tool in app_name for tool in settings.REMOTE_ACCESS_TOOLS):
-            user['suspicious_programs_used'] += 1
-            print(f"Remote access tool installed: {laptop} -> {app_name}")
-    
-    elif event_type == 'admin_users':
-        username = details.get('username', 'Unknown')
-        print(f"Admin user detected: {laptop} -> {username}")
-    
-    elif event_type == 'security_services':
-        service_name = details.get('name', '')
-        status = details.get('status', '')
-        
-        if status != 'RUNNING':
-            user['suspicious_programs_used'] += 2
-            print(f"CRITICAL: Security service stopped: {laptop} -> {service_name}")
-    
-    elif event_type == 'registry_persistence':
-        key_path = details.get('key', '').lower()
-        data = details.get('data', '').lower()
-        
-        if any(pattern.lower() in data for pattern in settings.SUSPICIOUS_PROGRAMS):
-            user['suspicious_programs_used'] += 1
-            print(f"Suspicious registry persistence: {laptop}")
-    
-    elif event_type == 'powershell_events':
-        script_text = details.get('script_block_text', '').lower()
-        
-        for pattern in settings.POWERSHELL_SUSPICIOUS_PATTERNS:
-            if pattern.lower() in script_text:
-                user['suspicious_programs_used'] += 1
-                print(f"Suspicious PowerShell detected: {laptop} -> {pattern}")
-                break
+    if event_type in ['new_processes', 'suspicious_processes']:
+        process_osquery_event(user, details)
+    elif event_type == 'windows_security_event':
+        process_windows_security_event(user, details)
+    elif event_type == 'windows_system_event':
+        process_windows_system_event(user, details)
+    elif event_type == 'network_connection':
+        process_network_event(user, details)
+    elif event_type in ['file_created', 'file_modified', 'file_deleted', 'file_moved']:
+        process_file_event(user, details)
     
     risk_score = calculate_risk_score(user)
+    print(f"        Risk Score: {risk_score:.2f}")
+    print(f"{'='*60}\n")
     
     if risk_score >= settings.HIGH_RISK_THRESHOLD:
         create_alert(laptop, risk_score, event_data, user)
+
+
+def process_osquery_event(user, details):
+    process_name = details.get('name', '').lower()
+    process_path = details.get('path', '').lower()
+    cmdline = details.get('cmdline', '').lower()
+    
+    print(f"        PROCESS: {process_name}")
+    print(f"        Path: {process_path}")
+    
+    if any(susp.lower() in process_name for susp in settings.SUSPICIOUS_PROGRAMS):
+        user['suspicious_programs_used'] += 1
+        print(f"        SUSPICIOUS PROGRAM DETECTED!")
+    
+    if 'powershell' in process_name and cmdline:
+        for pattern in settings.POWERSHELL_SUSPICIOUS_PATTERNS:
+            if pattern.lower() in cmdline:
+                user['suspicious_programs_used'] += 1
+                print(f"        SUSPICIOUS POWERSHELL: {pattern}")
+                break
+
+
+def process_windows_security_event(user, details):
+    event_id = details.get('event_id')
+    event_type = details.get('event_type', 'Unknown')
+    event_user = details.get('user')
+    
+    print(f"        Event ID: {event_id} - {event_type}")
+    if event_user:
+        print(f"        User: {event_user}")
+    
+    if event_id == 4625:
+        user['failed_logins'] += 1
+        print(f"        FAILED LOGIN ATTEMPT")
+    elif event_id in [4663, 4656]:
+        user['file_access_attempts'] += 1
+        event_data_str = str(details.get('event_data', '')).lower()
+        if any(pattern in event_data_str for pattern in settings.SENSITIVE_FILE_PATTERNS):
+            user['sensitive_file_access'] += 1
+            print(f"        SENSITIVE FILE ACCESS")
+    elif event_id == 4660:
+        user['file_access_attempts'] += 1
+        print(f"        FILE DELETION")
+    elif event_id == 4648:
+        user['privilege_escalation_attempts'] += 1
+        print(f"        EXPLICIT CREDENTIAL USAGE")
+    elif event_id in [4720, 4726, 4732, 4733]:
+        user['privilege_escalation_attempts'] += 1
+        print(f"        USER ACCOUNT MODIFICATION")
+    elif event_id in [5140, 5145]:
+        user['suspicious_network_activity'] += 1
+        print(f"        NETWORK SHARE ACCESS")
+
+
+def process_windows_system_event(user, details):
+    event_id = details.get('event_id')
+    event_type = details.get('event_type', 'Unknown')
+    
+    print(f"        Event ID: {event_id} - {event_type}")
+    
+    if event_id == 7045:
+        user['privilege_escalation_attempts'] += 1
+        print(f"        NEW SERVICE INSTALLED")
+
+
+def process_network_event(user, details):
+    remote_addr = details.get('remote_address', 'unknown')
+    process_name = details.get('process_name', 'unknown')
+    is_suspicious = details.get('is_suspicious', False)
+    
+    print(f"        Network: {process_name} -> {remote_addr}")
+    
+    if is_suspicious:
+        user['suspicious_network_activity'] += 1
+        print(f"        SUSPICIOUS NETWORK CONNECTION")
+
+
+def process_file_event(user, details):
+    filename = details.get('filename', 'unknown')
+    is_sensitive = details.get('is_sensitive', False)
+    event_type = details.get('event_type', 'unknown')
+    
+    print(f"        File: {event_type} - {filename}")
+    
+    if is_sensitive:
+        user['sensitive_file_access'] += 1
+        print(f"        SENSITIVE FILE ACTIVITY")
 
 
 def create_alert(laptop, risk_score, event_data, user):
@@ -175,22 +178,7 @@ def create_alert(laptop, risk_score, event_data, user):
         if time_since_last < settings.ALERT_COOLDOWN:
             return
     
-    reasons = []
-    if user['suspicious_programs_used'] > 0:
-        reasons.append(f"Used {user['suspicious_programs_used']} suspicious programs")
-    if user['sensitive_files_accessed'] > 5:
-        reasons.append(f"Accessed {user['sensitive_files_accessed']} sensitive files")
-    if user['usb_devices_connected'] > 0:
-        reasons.append(f"Connected {user['usb_devices_connected']} USB devices")
-    if user['after_hours_logins'] > 2:
-        reasons.append(f"After-hours activity: {user['after_hours_logins']} logins")
-    if user['files_accessed_1h'] > 50:
-        reasons.append(f"High volume: {user['files_accessed_1h']} files in 1 hour")
-    
-    if risk_score >= settings.CRITICAL_RISK_THRESHOLD:
-        severity = 'CRITICAL'
-    else:
-        severity = 'HIGH'
+    severity = 'CRITICAL' if risk_score >= settings.CRITICAL_RISK_THRESHOLD else 'HIGH'
     
     alert = {
         'id': len(alerts) + 1,
@@ -198,29 +186,34 @@ def create_alert(laptop, risk_score, event_data, user):
         'laptop': laptop,
         'risk_score': round(risk_score, 2),
         'severity': severity,
-        'reasons': reasons,
-        'event_type': event_data.get('name', 'unknown'),
-        'event_details': event_data
+        'suspicious_programs': user['suspicious_programs_used'],
+        'failed_logins': user['failed_logins'],
+        'file_access_attempts': user['file_access_attempts'],
+        'sensitive_file_access': user['sensitive_file_access'],
+        'suspicious_network_activity': user['suspicious_network_activity'],
+        'privilege_escalation': user['privilege_escalation_attempts'],
+        'event_type': event_data.get('name', 'unknown')
     }
     
     alerts.append(alert)
-    print(f"ALERT #{alert['id']}: {laptop} - Risk: {risk_score:.2f} - {severity}")
-    print(f"   Reasons: {', '.join(reasons)}")
+    print(f"\n{'*'*60}")
+    print(f"ALERT #{alert['id']}: {laptop}")
+    print(f"Risk Score: {risk_score:.2f} | Severity: {severity}")
+    print(f"Suspicious programs: {user['suspicious_programs_used']}")
+    print(f"Failed logins: {user['failed_logins']}")
+    print(f"File access attempts: {user['file_access_attempts']}")
+    print(f"Sensitive file access: {user['sensitive_file_access']}")
+    print(f"Network activity: {user['suspicious_network_activity']}")
+    print(f"Privilege escalation: {user['privilege_escalation_attempts']}")
+    print(f"{'*'*60}\n")
 
 
 @app.route('/', methods=['GET'])
 def home():
     return jsonify({
-        'message': 'Insider Threat Detection Backend',
+        'message': 'Enhanced Insider Threat Detection System',
         'status': 'running',
-        'endpoints': {
-            'health': '/api/health',
-            'summary': '/api/summary',
-            'events': '/api/events',
-            'users': '/api/users',
-            'alerts': '/api/alerts',
-            'osquery_ingestion': '/api/ingest/osquery'
-        }
+        'monitors': ['processes', 'windows_events', 'network', 'files']
     })
 
 
@@ -229,8 +222,7 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'total_events': total_events_received,
-        'active_laptops': len(active_laptops)
+        'total_events': total_events_received
     })
 
 
@@ -240,7 +232,6 @@ def ingest_osquery():
     
     try:
         event_data = request.json
-        
         if not event_data:
             return jsonify({'error': 'No data provided'}), 400
         
@@ -252,7 +243,7 @@ def ingest_osquery():
         return jsonify({'status': 'success', 'event_id': total_events_received}), 200
     
     except Exception as e:
-        print(f"Error processing event: {str(e)}")
+        print(f"\nERROR: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 
@@ -263,30 +254,18 @@ def get_summary():
         if calculate_risk_score(user) >= settings.HIGH_RISK_THRESHOLD
     )
     
+    total_failed_logins = sum(u['failed_logins'] for u in user_data.values())
+    total_file_access = sum(u['file_access_attempts'] for u in user_data.values())
+    total_sensitive_access = sum(u['sensitive_file_access'] for u in user_data.values())
+    
     return jsonify({
-        'active_laptops': len(active_laptops),
         'total_events': total_events_received,
         'total_alerts': len(alerts),
         'high_risk_users': high_risk_count,
+        'total_failed_logins': total_failed_logins,
+        'total_file_access': total_file_access,
+        'total_sensitive_access': total_sensitive_access,
         'timestamp': datetime.now().isoformat()
-    })
-
-
-@app.route('/api/events', methods=['GET'])
-def get_events():
-    limit = request.args.get('limit', 50, type=int)
-    laptop = request.args.get('laptop', None)
-    
-    if laptop:
-        filtered_events = [e for e in events if e.get('hostIdentifier') == laptop]
-    else:
-        filtered_events = list(events)
-    
-    recent_events = filtered_events[-limit:]
-    
-    return jsonify({
-        'count': len(recent_events),
-        'events': recent_events
     })
 
 
@@ -295,123 +274,61 @@ def get_users():
     users_with_risk = []
     for laptop, user in user_data.items():
         risk = calculate_risk_score(user)
-        
         users_with_risk.append({
             **user,
-            'risk_score': round(risk, 2),
-            'risk_level': get_risk_level(risk)
+            'risk_score': round(risk, 2)
         })
     
     users_with_risk.sort(key=lambda x: x['risk_score'], reverse=True)
-    
-    return jsonify({
-        'count': len(users_with_risk),
-        'users': users_with_risk
-    })
-
-
-@app.route('/api/users/<laptop_name>', methods=['GET'])
-def get_user_detail(laptop_name):
-    if laptop_name not in user_data:
-        return jsonify({'error': 'User not found'}), 404
-    
-    user = user_data[laptop_name]
-    risk = calculate_risk_score(user)
-    
-    user_events = [e for e in events if e.get('hostIdentifier') == laptop_name]
-    user_alerts = [a for a in alerts if a['laptop'] == laptop_name]
-    
-    return jsonify({
-        **user,
-        'risk_score': round(risk, 2),
-        'risk_level': get_risk_level(risk),
-        'recent_events': user_events[-20:],
-        'alerts': user_alerts
-    })
+    return jsonify({'count': len(users_with_risk), 'users': users_with_risk})
 
 
 @app.route('/api/alerts', methods=['GET'])
 def get_alerts():
     limit = request.args.get('limit', 100, type=int)
     laptop = request.args.get('laptop', None)
-    severity = request.args.get('severity', None)
     
     filtered_alerts = alerts
-    
     if laptop:
         filtered_alerts = [a for a in filtered_alerts if a['laptop'] == laptop]
     
-    if severity:
-        filtered_alerts = [a for a in filtered_alerts if a['severity'] == severity.upper()]
-    
-    recent_alerts = filtered_alerts[-limit:]
-    
     return jsonify({
-        'count': len(recent_alerts),
-        'alerts': recent_alerts
+        'count': len(filtered_alerts[-limit:]),
+        'alerts': filtered_alerts[-limit:]
     })
 
 
-@app.route('/api/training-data', methods=['GET'])
-def get_training_data():
-    training_samples = []
-    for laptop, user in user_data.items():
-        has_alerts = any(a['laptop'] == laptop for a in alerts)
-        
-        training_samples.append({
-            'features': [
-                user['files_accessed_1h'],
-                user['files_accessed_24h'],
-                user['processes_started_1h'],
-                user['processes_started_24h'],
-                user['sensitive_files_accessed'],
-                user['suspicious_programs_used'],
-                user['usb_devices_connected'],
-                user['after_hours_logins'],
-                user['network_connections']
-            ],
-            'laptop': laptop,
-            'timestamp': user['last_seen'],
-            'label': 1 if has_alerts else 0
-        })
+@app.route('/api/events', methods=['GET'])
+def get_events():
+    limit = request.args.get('limit', 50, type=int)
+    event_type = request.args.get('type', None)
+    
+    filtered_events = list(events)
+    if event_type:
+        filtered_events = [e for e in filtered_events if e.get('name') == event_type]
     
     return jsonify({
-        'count': len(training_samples),
-        'samples': training_samples,
-        'feature_names': [
-            'files_accessed_1h',
-            'files_accessed_24h',
-            'processes_started_1h',
-            'processes_started_24h',
-            'sensitive_files_accessed',
-            'suspicious_programs_used',
-            'usb_devices_connected',
-            'after_hours_logins',
-            'network_connections'
-        ]
+        'count': len(filtered_events[-limit:]),
+        'events': filtered_events[-limit:]
     })
-
-
-def get_risk_level(risk_score):
-    if risk_score >= 0.85:
-        return 'CRITICAL'
-    elif risk_score >= 0.70:
-        return 'HIGH'
-    elif risk_score >= 0.50:
-        return 'MEDIUM'
-    else:
-        return 'LOW'
 
 
 if __name__ == '__main__':
     print("=" * 70)
-    print("INSIDER THREAT DETECTION BACKEND")
+    print("ENHANCED INSIDER THREAT DETECTION SYSTEM")
     print("=" * 70)
-    print(f"OSQuery Endpoint:  http://localhost:5000/api/ingest/osquery")
-    print(f"API Summary:       http://localhost:5000/api/summary")
-    print(f"Users API:         http://localhost:5000/api/users")
-    print(f"Alerts API:        http://localhost:5000/api/alerts")
-    print(f"Health Check:      http://localhost:5000/api/health")
+    print("Monitoring for:")
+    print("  - Suspicious program executions")
+    print("  - Windows Event Logs (authentication, file access, privileges)")
+    print("  - Network connections")
+    print("  - File system activity")
     print("=" * 70)
+    print(f"Ingest Endpoint:  http://localhost:5000/api/ingest/osquery")
+    print(f"API Summary:      http://localhost:5000/api/summary")
+    print(f"API Users:        http://localhost:5000/api/users")
+    print(f"API Alerts:       http://localhost:5000/api/alerts")
+    print(f"API Events:       http://localhost:5000/api/events")
+    print("=" * 70)
+    print("")
     
     app.run(host='0.0.0.0', port=5000, debug=True)
