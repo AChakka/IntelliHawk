@@ -1,0 +1,71 @@
+.roles-page {
+  background-color: #0d1b2a;
+  color: white;
+  min-height: 100vh;
+  padding: 40px;
+  font-family: 'Inter', sans-serif;
+}
+
+.roles-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #38bdf8;
+  margin-bottom: 24px;
+}
+
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 24px;
+}
+
+.role-card {
+  background-color: #1b263b;
+  border: 1px solid #243b55;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.role-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);
+}
+
+.role-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.role-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #f0f4f8;
+}
+
+.add-role-btn {
+  background-color: #38bdf8;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.add-role-btn:hover {
+  background-color: #1d9bf0;
+}
+
+.chart-container {
+  width: 100%;
+  height: 180px;
+  margin-top: 16px;
+  background-color: #102841;
+  border-radius: 12px;
+  padding: 8px;
+}
