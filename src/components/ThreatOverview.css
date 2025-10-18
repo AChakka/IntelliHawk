@@ -1,47 +1,71 @@
-/* One row: wide left, narrower right */
-.threat-grid{
+/* Layout: wide line chart left, pie + summary right */
+.threat-grid {
   display: grid;
-  grid-template-columns: minmax(620px, 2fr) minmax(340px, 1fr);
-  gap: 28px;
-  width: min(1400px, 100%);
+  grid-template-columns: minmax(700px, 2fr) minmax(380px, 1fr);
+  gap: 32px;
+  width: min(1500px, 100%);
   margin: 40px auto 0;
   align-items: start;
+  padding: 0 20px;
 }
 
 /* Cards */
-.card{
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 8px 24px rgba(2,6,23,.08);
-  padding: 22px 24px;
+.card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 16px;
 }
 
 /* Chart areas */
-.chart-wrap--main{ height: 360px; }       /* big left chart */
-.chart-wrap--side{ height: 220px; }       /* shorter pie so summary fits */
+.chart-wrap--main {
+  height: 440px; /* bigger line chart */
+}
+
+.chart-wrap--side {
+  height: 280px; /* bigger pie chart */
+}
 
 /* Right card vertical stack */
-.side-stack{
+.side-stack {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
 }
 
-.summary h4{
-  margin: 4px 0 6px;
-  font-size: 1.05rem;
+.summary h4 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0f172a;
 }
-.summary ul{
+
+.summary ul {
   margin: 0;
   padding-left: 18px;
-  line-height: 1.55;
+  line-height: 1.6;
   color: #334155;
+  font-size: 0.95rem;
 }
 
 /* Responsive: stack vertically on small screens */
-@media (max-width: 1100px){
-  .threat-grid{
+@media (max-width: 1200px) {
+  .threat-grid {
     grid-template-columns: 1fr;
   }
-  .chart-wrap--main{ height: 320px; }
+  .chart-wrap--main {
+    height: 380px;
+  }
+  .chart-wrap--side {
+    height: 240px;
+  }
 }
