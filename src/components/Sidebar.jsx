@@ -29,9 +29,8 @@ export default function Sidebar({ isOpen, onClose }) {
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-header">
-        <h2>Security Center</h2>
-        <button onClick={onClose}>×</button>
-      </div>
+        <h2>IntelliHawk</h2>
+              </div>
 
       <nav className="sidebar-nav">
         {menuItems.map((item) => (
