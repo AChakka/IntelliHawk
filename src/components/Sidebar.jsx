@@ -9,6 +9,7 @@ import {
   faShieldHalved, 
   faChartLine, 
   faGear,
+  faPeopleGroup,
    
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -18,6 +19,7 @@ export default function Sidebar({ isOpen, onClose }) {
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: faGauge },
     { name: 'Users', path: '/users', icon: faUser },
+    { name: 'Roles', path: '/roles', icon: faPeopleGroup },
     { name: 'Risk Assessment', path: '/alerts', icon: faChartLine },
     { name: 'Security Center', path: '/SecurityCenter', icon: faShieldHalved },
     { name: 'Settings', path: '/settings', icon: faGear },

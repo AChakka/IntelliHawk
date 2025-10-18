@@ -9,6 +9,7 @@ import Dashboard from './components/Dashboard';
 import Users from './components/Users';
 import Alerts from './components/Alerts';
 import SecurityCenter from './components/SecurityCenter';
+import Roles from './components/Roles';
 import Settings from './components/Settings';
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -31,6 +32,7 @@ function App() {
               <Route path="/users" element={<Users />} />
               <Route path="/alerts" element={<Alerts />} />
               <Route path="/Security Center" element={<SecurityCenter />} />
+              <Route path="/Roles" element={<Roles />} />
               <Route path="/settings" element={<Settings />} />
             </Routes>
           </div>
