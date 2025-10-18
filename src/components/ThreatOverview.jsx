@@ -1,13 +1,12 @@
+// ThreatOverview.jsx
 import React from "react";
 import {
   ResponsiveContainer,
   LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
   PieChart, Pie, Cell,
-  BarChart, Bar
 } from "recharts";
 import "./ThreatOverview.css";
 
-// --- demo data (swap with real data later) ---
 const eventsOverTime = [
   { date: "Mon", alerts: 110, incidents: 3 },
   { date: "Tue", alerts: 135, incidents: 5 },
@@ -22,80 +21,55 @@ const threatSplit = [
   { name: "External", value: 62 },
   { name: "Internal", value: 38 },
 ];
-
-const eventTypes = [
-  { type: "Failed Logins", value: 54 },
-  { type: "Privilege Esc.", value: 21 },
-  { type: "Data Exfil", value: 12 },
-  { type: "Malware", value: 9 },
-];
-
-// color palette
-const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+const COLORS = ["#3b82f6", "#10b981"];
 
 export default function ThreatOverview() {
   return (
-    <div className="threat-grid">
-      {/* KPI Trend */}
-      <section className="card">
-        <h3 className="section-title">User Security Events (7 days)</h3>
-        <div className="chart-wrap">
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={eventsOverTime} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="alerts" stroke="#3b82f6" strokeWidth={3} dot={false} />
-              <Line type="monotone" dataKey="incidents" stroke="#ef4444" strokeWidth={3} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </section>
+  <div className="threat-grid">
+    {/* WIDE LEFT */}
+    <section className="card card--main">
+      <h3 className="section-title">User Security Events (7 days)</h3>
+      <div className="chart-wrap chart-wrap--main">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={eventsOverTime} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="alerts" stroke="#3b82f6" strokeWidth={3} dot={false} />
+            <Line type="monotone" dataKey="incidents" stroke="#ef4444" strokeWidth={3} dot={false} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </section>
 
-      {/* Internal vs External */}
-      <section className="card">
-        <h3 className="section-title">Threat Source Split</h3>
-        <div className="chart-wrap">
-          <ResponsiveContainer width="100%" height={280}>
+    {/* RIGHT: pie + summary in one card */}
+    <section className="card card--side">
+      <h3 className="section-title">Threat Source Split</h3>
+
+      <div className="side-stack">
+        <div className="chart-wrap chart-wrap--side">
+          <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Tooltip />
-              <Legend />
-              <Pie
-                data={threatSplit}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                innerRadius={50}
-                outerRadius={90}
-                paddingAngle={2}
-              >
-                {threatSplit.map((e, i) => (
-                  <Cell key={e.name} fill={COLORS[i % COLORS.length]} />
-                ))}
+              <Pie data={threatSplit} dataKey="value" nameKey="name" innerRadius={60} outerRadius={92} paddingAngle={2}>
+                {threatSplit.map((e, i) => <Cell key={e.name} fill={COLORS[i]} />)}
               </Pie>
             </PieChart>
           </ResponsiveContainer>
         </div>
-      </section>
 
-      {/* Event types */}
-      <section className="card">
-        <h3 className="section-title">Top Event Categories</h3>
-        <div className="chart-wrap">
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={eventTypes} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="type" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="value" fill="#10b981" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="summary">
+          <h4>Summary</h4>
+          <ul>
+            <li><strong>62%</strong> of threats are <strong>External</strong>; <strong>38%</strong> are <strong>Internal</strong>.</li>
+            <li>Alerts peak mid-week; incidents remain low with a small spike on Thu.</li>
+            <li>Prioritize accounts producing repeated alerts Thu–Fri.</li>
+          </ul>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
+  </div>
   );
 }
