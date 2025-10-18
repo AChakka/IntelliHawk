@@ -1,4 +1,4 @@
-// components/ActivityFeed.js
+// components/ActivityFeed.jsx
 import React from 'react';
 
 const ActivityFeed = () => {
