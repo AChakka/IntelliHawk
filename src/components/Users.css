@@ -1,0 +1,212 @@
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --ink: #0f172a;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --chip-bg: #111827;
+  --chip-fg: #e5e7eb;
+}
+
+/* Layout */
+.users-page {
+  min-height: 100dvh;
+  background: var(--bg);
+  padding: 16px;
+  position: relative;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Section headers */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font-size: 25px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* Scroller */
+.scroller {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+
+/* Active user chips */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  border-radius: 9999px;
+  box-shadow: var(--shadow);
+}
+
+.chip-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.name--sm {
+  font-weight: 600;
+  color: #111827;
+}
+
+.role {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
+/* Avatar */
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--chip-bg);
+  color: var(--chip-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Risk cards */
+.risk-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  border-radius: 14px;
+  min-width: 320px;
+  box-shadow: var(--shadow);
+}
+
+.risk-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+.pill--success {
+  background: var(--success);
+}
+
+.pill--muted {
+  background: var(--muted);
+}
+
+.pill--high {
+  background: var(--danger);
+}
+
+.pill--medium {
+  background: var(--warning);
+}
+
+.pill--low {
+  background: var(--success);
+}
+
+/* All Users Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 12px;
+  box-shadow: var(--shadow);
+}
+
+.card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.name {
+  color: var(--ink);
+}
+
+.spacer {
+  margin-top: 24px;
+}
+
+.spacer-lg {
+  margin-top: 28px;
+}
+
+/* Add User Button */
+.fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #111827;
+  color: #ffffff;
+  border: none;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+.fab-icon {
+  width: 22px;
+  height: 22px;
+}
