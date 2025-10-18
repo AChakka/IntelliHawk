@@ -172,7 +172,7 @@ export default function SecurityCenter() {
 
         <div className="sc-grid">
           <section className="sc-card sc-card--large">
-            <SectionHeader title="System Log Data" />
+            <SectionHeader title="High Risk Log Data" />
             <SysLogTable rows={eventRows} />
           </section>
 
