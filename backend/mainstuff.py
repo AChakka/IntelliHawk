@@ -10,6 +10,7 @@ CORS(app)
 events = deque(maxlen=settings.MAX_EVENTS)
 user_data = {}
 alerts = []
+lock_commands = []
 total_events_received = 0
 
 
@@ -48,7 +49,7 @@ def calculate_risk_score(user):
 def process_event(event_data):
     global total_events_received
     
-    laptop = event_data.get('hostIdentifier', 'unknown')
+    laptop = normalize_hostname(event_data.get('hostIdentifier', 'unknown'))
     event_type = event_data.get('name', '')
     event_action = event_data.get('action', '')
     details = event_data.get('columns', {})
@@ -77,6 +78,11 @@ def process_event(event_data):
     
     risk_score = calculate_risk_score(user)
     print(f"        Risk Score: {risk_score:.2f}")
+    
+    if risk_score >= 0.9:
+        print(f"        CRITICAL: Risk score >= 0.9 - LOCKING SCREEN")
+        issue_lock_command(laptop)
+    
     print(f"{'='*60}\n")
     
     if risk_score >= settings.HIGH_RISK_THRESHOLD:
@@ -170,8 +176,25 @@ def process_file_event(user, details):
         print(f"        SENSITIVE FILE ACTIVITY")
 
 
+def issue_lock_command(laptop):
+    laptop = normalize_hostname(laptop)
+    lock_command = {
+        'id': len(lock_commands) + 1,
+        'laptop': laptop,
+        'command': 'lock_screen',
+        'timestamp': datetime.now().isoformat(),
+        'executed': False
+    }
+    lock_commands.append(lock_command)
+    print(f"\n{'!'*60}")
+    print(f"LOCK COMMAND ISSUED FOR: {laptop}")
+    print(f"Command ID: {lock_command['id']}")
+    print(f"{'!'*60}\n")
+
+
 def create_alert(laptop, risk_score, event_data, user):
-    recent_alerts = [a for a in alerts if a['laptop'] == laptop]
+    laptop = normalize_hostname(laptop)
+    recent_alerts = [a for a in alerts if normalize_hostname(a['laptop']) == laptop]
     if recent_alerts:
         last_alert_time = datetime.fromisoformat(recent_alerts[-1]['timestamp'])
         time_since_last = (datetime.now() - last_alert_time).total_seconds()
@@ -290,7 +313,8 @@ def get_alerts():
     
     filtered_alerts = alerts
     if laptop:
-        filtered_alerts = [a for a in filtered_alerts if a['laptop'] == laptop]
+        laptop = normalize_hostname(laptop)
+        filtered_alerts = [a for a in filtered_alerts if normalize_hostname(a['laptop']) == laptop]
     
     return jsonify({
         'count': len(filtered_alerts[-limit:]),
@@ -310,6 +334,39 @@ def get_events():
     return jsonify({
         'count': len(filtered_events[-limit:]),
         'events': filtered_events[-limit:]
+    })
+
+
+@app.route('/api/lock_commands/<laptop_name>', methods=['GET'])
+def get_lock_commands(laptop_name):
+    laptop_name = normalize_hostname(laptop_name)
+    pending_commands = [
+        cmd for cmd in lock_commands 
+        if normalize_hostname(cmd['laptop']) == laptop_name and not cmd['executed']
+    ]
+    return jsonify({
+        'count': len(pending_commands),
+        'commands': pending_commands,
+        'laptop_queried': laptop_name
+    })
+
+
+@app.route('/api/lock_commands/<int:command_id>/executed', methods=['POST'])
+def mark_lock_executed(command_id):
+    for cmd in lock_commands:
+        if cmd['id'] == command_id:
+            cmd['executed'] = True
+            cmd['executed_at'] = datetime.now().isoformat()
+            print(f"Lock command {command_id} marked as executed for {cmd['laptop']}")
+            return jsonify({'status': 'success', 'command_id': command_id}), 200
+    return jsonify({'error': 'Command not found'}), 404
+
+
+@app.route('/api/lock_commands', methods=['GET'])
+def get_all_lock_commands():
+    return jsonify({
+        'count': len(lock_commands),
+        'commands': lock_commands
     })
 
 

@@ -1,19 +1,14 @@
-# settings.py - Enhanced Configuration
-
 MAX_EVENTS = 10000
 
-# Risk thresholds
 HIGH_RISK_THRESHOLD = 0.70
 CRITICAL_RISK_THRESHOLD = 0.85
+LOCK_THRESHOLD = 0.90
 
-# Alert cooldown (seconds)
 ALERT_COOLDOWN = 300
 
-# API Configuration
 API_HOST = '0.0.0.0'
 API_PORT = 5000
 
-# Suspicious programs list
 SUSPICIOUS_PROGRAMS = [
     'powershell.exe',
     'cmd.exe',
@@ -63,7 +58,6 @@ SUSPICIOUS_PROGRAMS = [
     'pythonw.exe'
 ]
 
-# Suspicious PowerShell patterns
 POWERSHELL_SUSPICIOUS_PATTERNS = [
     'Invoke-Expression',
     'iex',
@@ -84,7 +78,6 @@ POWERSHELL_SUSPICIOUS_PATTERNS = [
     'noexit'
 ]
 
-# Sensitive file patterns (for Windows Event Logs)
 SENSITIVE_FILE_PATTERNS = [
     'password',
     'credential',
@@ -108,14 +101,11 @@ SENSITIVE_FILE_PATTERNS = [
     'ntds.dit'
 ]
 
-# Windows Event IDs to monitor
 WINDOWS_SECURITY_EVENTS = {
     4663: "File Access Attempt",
     4656: "Handle to Object Requested",
     4660: "Object Deleted",
     4670: "Permissions Changed",
-    4688: "New Process Created",
-    4689: "Process Exited",
     4624: "Successful Logon",
     4625: "Failed Logon",
     4634: "Logoff",
