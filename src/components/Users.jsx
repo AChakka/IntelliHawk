@@ -1,17 +1,35 @@
-import React from "react";
+// src/components/Users.jsx
+import React, { useEffect, useMemo, useState } from "react";
 import "./users.css";
+import { api } from "../lib/api"; // <-- uses the tiny client we added earlier
 
-// Sample data
-const sampleUsers = [
-  { id: 1, name: "Ava Patel", role: "Analyst", status: "active", risk: "high" },
-  { id: 2, name: "Liam Chen", role: "Engineer", status: "active", risk: "medium" },
-  { id: 3, name: "Noah Smith", role: "Manager", status: "inactive", risk: "low" },
-  { id: 4, name: "Mia Garcia", role: "Scientist", status: "active", risk: "high" },
-  { id: 5, name: "Ethan Johnson", role: "Intern", status: "active", risk: "low" },
-  { id: 6, name: "Olivia Davis", role: "Engineer", status: "inactive", risk: "medium" },
-  { id: 7, name: "Sophia Martinez", role: "Security", status: "active", risk: "medium" },
-  { id: 8, name: "James Lee", role: "Engineer", status: "active", risk: "high" },
-];
+// --- helpers -------------------------------------------------
+
+// Backend returns: laptop_name, last_seen, risk_score, risk_level, ...
+// Your UI wants: { id, name, role, status, risk }
+function mapApiToUi(apiUsers = []) {
+  return apiUsers.map((u, i) => {
+    const lastSeen = u.last_seen ? new Date(u.last_seen) : null;
+
+    // simple "active" heuristic: seen in last 15 minutes
+    const isActive =
+      lastSeen && Date.now() - lastSeen.getTime() < 15 * 60 * 1000;
+
+    // bucketize numeric risk_score (0..1) to low/medium/high for your pills
+    const risk =
+      u.risk_score >= 0.70 ? "high" :
+      u.risk_score >= 0.50 ? "medium" : "low";
+
+    return {
+      id: u.laptop_name || String(i + 1),
+      name: u.laptop_name || `Device ${i + 1}`,
+      role: "Endpoint",            // backend has no role; label devices plainly
+      status: isActive ? "active" : "inactive",
+      risk,                        // "low" | "medium" | "high"
+      _raw: u,                     // keep original around if you want to show more later
+    };
+  });
+}
 
 const riskOrder = { high: 3, medium: 2, low: 1 };
 
@@ -70,15 +88,46 @@ function AllUsersGrid({ users }) {
   );
 }
 
-export default function Users({ users = sampleUsers }) {
-  const activeUsers = users.filter((u) => u.status === "active");
-  const highestRisk = [...users]
-    .sort((a, b) => riskOrder[b.risk] - riskOrder[a.risk])
-    .slice(0, 10);
+// --- main component ------------------------------------------
+
+export default function Users() {
+  const [users, setUsers] = useState([]);
+  const [err, setErr] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function load() {
+      try {
+        setErr("");
+        const data = await api.users(); // GET /api/users
+        const uiUsers = mapApiToUi(data.users || []);
+        if (mounted) setUsers(uiUsers);
+      } catch (e) {
+        if (mounted) setErr(e?.message || "Failed to load users");
+      }
+    }
+
+    load();
+    const id = setInterval(load, 10000); // refresh every 10s (optional)
+    return () => { mounted = false; clearInterval(id); };
+  }, []);
+
+  const activeUsers = useMemo(
+    () => users.filter((u) => u.status === "active"),
+    [users]
+  );
+
+  const highestRisk = useMemo(
+    () => [...users].sort((a, b) => riskOrder[b.risk] - riskOrder[a.risk]).slice(0, 10),
+    [users]
+  );
 
   return (
     <div className="users-page">
       <div className="container">
+        {err && <div className="error-banner">Error: {err}</div>}
+
         <SectionHeader title="Active Users" />
         <UsersScroller
           users={activeUsers}
@@ -117,12 +166,7 @@ export default function Users({ users = sampleUsers }) {
       </div>
 
       <button type="button" className="fab" aria-label="Add a user" title="Add a user">
-        <svg
-          className="fab-icon"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-        >
+        <svg className="fab-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
       </button>
