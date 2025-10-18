@@ -1,0 +1,44 @@
+.threat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(340px, 1fr)); /* wider columns */
+  gap: 32px;                     /* more space between cards */
+  margin-top: 60px;              /* extra breathing room under TopBar */
+  justify-content: center;       /* center grid within main content */
+  align-items: start;
+  width: 100%;
+  max-width: 1600px;             /* expand up to a comfortable limit */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(2,6,23,.08);
+  padding: 28px 30px;
+  min-height: 420px;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(2,6,23,.12);
+}
+
+.chart-wrap {
+  width: 100%;
+  height: 320px; /* taller charts */
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+  .threat-grid {
+    grid-template-columns: repeat(2, minmax(360px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .threat-grid {
+    grid-template-columns: 1fr;
+  }
+}

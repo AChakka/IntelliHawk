@@ -1,4 +1,21 @@
 /* App.css */
+
+
+/* App.css */
+html, body, #root { height: 100%; margin: 0; }
+
+.app { min-height: 100%; }
+
+.main-content {
+  margin-left: 260px;
+  padding: 120px 40px 40px;
+  box-sizing: border-box;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: #f6f7f9;
+}
+
+
 * {
   margin: 0;
   padding: 0;
