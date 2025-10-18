@@ -1,0 +1,122 @@
+:root {
+  --bg: #f8fafc;
+  --ink: #0f172a;
+  --muted: #6b7280;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --shadow: 0 1px 2px rgba(0,0,0,0.05);
+
+  --high: #ef4444;
+  --medium: #f59e0b;
+  --low: #10b981;
+}
+
+/* Page shell */
+.sc-page {
+  min-height: 100dvh;
+  background: var(--bg);
+  padding: 20px;
+}
+
+.sc-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Grid: two big panels */
+.sc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 1000px) {
+  .sc-grid { grid-template-columns: 1fr; }
+}
+
+/* Cards */
+.sc-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sc-card--large .sc-table { font-size: 16px; }
+.sc-card--large .sc-table thead th { padding: 12px 10px; }
+.sc-card--large .sc-table tbody td { padding: 12px 10px; }
+
+/* Section header */
+.sc-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.sc-section-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Tables */
+.sc-table-wrap {
+  width: 100%;
+  overflow: auto;
+  min-height: 360px;
+}
+
+.sc-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sc-table thead th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.sc-table tbody td {
+  border-bottom: 1px solid #f1f5f9;
+  color: var(--ink);
+  vertical-align: top;
+}
+
+.sc-cell-ellipsis {
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Badges */
+.sc-badge {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  color: #fff;
+  background: var(--muted);
+  text-transform: capitalize;
+}
+
+.sc-badge--warn   { background: var(--medium); }
+.sc-badge--error  { background: var(--high); }
+.sc-badge--info   { background: #3b82f6; }
+.sc-badge--success{ background: var(--low); }
+.sc-badge--failed { background: var(--high); }
+.sc-badge--pending{ background: var(--medium); }

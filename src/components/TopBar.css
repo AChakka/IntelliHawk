@@ -3,9 +3,10 @@
   --accent: #00bcd4;
   --text: #f5f5f5;
   --light-bg: rgba(255, 255, 255, 0.1);
-  --glass-bg: rgba(11, 28, 44, 0.5);
+  --glass-bg:#0f172a;
   --shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
   --radius: 16px;
+
 }
 
 
