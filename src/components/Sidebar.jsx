@@ -1,46 +1,49 @@
-// components/Sidebar.js
+// Sidebar.jsx
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import './Sidebar.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faGauge,
-  faShieldHalved,
-  faUser,
-  faChartLine,
-  faTriangleExclamation,
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faGauge, 
+  faUser, 
+  faShieldHalved, 
+  faChartLine, 
   faGear,
-} from '@fortawesome/free-solid-svg-icons'
+   
+} from '@fortawesome/free-solid-svg-icons';
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
+  const location = useLocation();
+
   const menuItems = [
-    { name: 'Overview',        icon: faGauge },
-    { name: 'Threat Detection',icon: faShieldHalved },
-    { name: 'User Activity',   icon: faUser },
-    { name: 'Risk Assessment', icon: faChartLine },
-    { name: 'Incidents',       icon: faTriangleExclamation },
-    { name: 'Settings',        icon: faGear },
+    { name: 'Dashboard', path: '/', icon: faGauge },
+    { name: 'Users', path: '/users', icon: faUser },
+    { name: 'Risk Assessment', path: '/alerts', icon: faChartLine },
+    { name: 'Security Center', path: '/SecurityCenter', icon: faShieldHalved },
+    { name: 'Settings', path: '/settings', icon: faGear },
+    
   ];
 
   return (
-    <aside className="sidebar glass">
-      <div className="sidebar-brand">
-        <div className="brand-dot" />
-        <span className="brand-text">Security Center</span>
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+      <div className="sidebar-header">
+        <h2>Security Center</h2>
+        <button onClick={onClose}>×</button>
       </div>
 
       <nav className="sidebar-nav">
         {menuItems.map((item) => (
-          <a key={item.name} href="#/" className="nav-item">
+          <Link 
+            key={item.name} 
+            to={item.path} 
+            className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
+            onClick={onClose}
+          >
             <FontAwesomeIcon icon={item.icon} className="nav-icon" />
-            <span className="nav-label">{item.name}</span>
-          </a>
+            {item.name}
+          </Link>
         ))}
       </nav>
-
-      {/* optional footer pill */}
-      <div className="sidebar-footer">
-        <span className="status-pill">Online</span>
-      </div>
     </aside>
-  )
-};
+  );
+}
