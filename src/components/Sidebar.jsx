@@ -1,34 +1,46 @@
 // components/Sidebar.js
 import React from 'react';
+import './Sidebar.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faGauge,
+  faShieldHalved,
+  faUser,
+  faChartLine,
+  faTriangleExclamation,
+  faGear,
+} from '@fortawesome/free-solid-svg-icons'
 
-const Sidebar = ({ isOpen, onClose }) => {
+export default function Sidebar() {
   const menuItems = [
-    { name: 'Overview', icon: '📊' },
-    { name: 'Threat Detection', icon: '🛡️' },
-    { name: 'User Activity', icon: '👥' },
-    { name: 'Risk Assessment', icon: '📈' },
-    { name: 'Incidents', icon: '🚨' },
-    { name: 'Settings', icon: '⚙️' }
+    { name: 'Overview',        icon: faGauge },
+    { name: 'Threat Detection',icon: faShieldHalved },
+    { name: 'User Activity',   icon: faUser },
+    { name: 'Risk Assessment', icon: faChartLine },
+    { name: 'Incidents',       icon: faTriangleExclamation },
+    { name: 'Settings',        icon: faGear },
   ];
 
   return (
-    <>
-      {isOpen && <div className="sidebar-overlay" onClick={onClose}></div>}
-      <div className={`sidebar ${isOpen ? 'open' : ''}`}>
-        <div className="sidebar-header">
-          <h2>Security Center</h2>
-        </div>
-        <nav className="sidebar-nav">
-          {menuItems.map(item => (
-            <a key={item.name} href="#/" className="nav-item">
-              <span className="nav-icon">{item.icon}</span>
-              {item.name}
-            </a>
-          ))}
-        </nav>
+    <aside className="sidebar glass">
+      <div className="sidebar-brand">
+        <div className="brand-dot" />
+        <span className="brand-text">Security Center</span>
       </div>
-    </>
-  );
-};
 
-export default Sidebar;
+      <nav className="sidebar-nav">
+        {menuItems.map((item) => (
+          <a key={item.name} href="#/" className="nav-item">
+            <FontAwesomeIcon icon={item.icon} className="nav-icon" />
+            <span className="nav-label">{item.name}</span>
+          </a>
+        ))}
+      </nav>
+
+      {/* optional footer pill */}
+      <div className="sidebar-footer">
+        <span className="status-pill">Online</span>
+      </div>
+    </aside>
+  )
+};
