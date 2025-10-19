@@ -1,18 +1,16 @@
-// Sidebar.jsx
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faGauge, 
-  faUser, 
-  faShieldHalved, 
-  faChartLine, 
+import {
+  faGauge,
+  faUser,
+  faShieldHalved,
+  faChartLine,
   faGear,
   faPeopleGroup,
-   
 } from '@fortawesome/free-solid-svg-icons';
-
+import IntellihawkLogo from "../assets/IntellihawkLogo.png";
 export default function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
 
@@ -23,20 +21,21 @@ export default function Sidebar({ isOpen, onClose }) {
     { name: 'Risk Assessment', path: '/alerts', icon: faChartLine },
     { name: 'Security Center', path: '/security-center', icon: faShieldHalved },
     { name: 'Settings', path: '/settings', icon: faGear },
-    
   ];
 
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
-      <div className="sidebar-header">
+      {/* Brand header now clickable */}
+      <Link to="/" className="sidebar-header" onClick={onClose}>
+        <img src={IntellihawkLogo} alt="IntelliHawk Logo" className="sidebar-logo" />
         <h2>IntelliHawk</h2>
-              </div>
+      </Link>
 
       <nav className="sidebar-nav">
         {menuItems.map((item) => (
-          <Link 
-            key={item.name} 
-            to={item.path} 
+          <Link
+            key={item.name}
+            to={item.path}
             className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
             onClick={onClose}
           >
