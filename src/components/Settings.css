@@ -18,7 +18,7 @@
 
 .set-page {
   min-height: 100dvh;
-  background: var(--bg);
+  background: #0d1b2a;
   padding: 20px;
   overflow-x: hidden;
 }

@@ -1,23 +1,34 @@
+// src/components/Alerts.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import "./Alerts.css";
 import { api } from "../lib/api";
 
-/* ---------- helpers: map backend → your table rows ---------- */
+/* ---------- helpers: map backend → table rows ---------- */
 
-// Events don’t include “severity”; we infer a simple level for display.
+// Simple severity inference for raw events (backend events have no severity)
 const inferSeverity = (name = "", columns = {}) => {
   const n = String(name).toLowerCase();
-  const msg = JSON.stringify(columns).toLowerCase();
-  if (/(multiple failed|failed login|error|security_services)/.test(n) || /(failed|stopped|malware|ransom)/.test(msg)) return "High";
-  if (/(suspicious|unusual|usb|powershell)/.test(n) || /(usb|enc|b64|remote)/.test(msg)) return "Medium";
+  const msg = JSON.stringify(columns || {}).toLowerCase();
+  if (/(multiple failed|failed login|error|security_services)/.test(n) || /(failed|stopped|malware|ransom)/.test(msg))
+    return "High";
+  if (/(suspicious|unusual|usb|powershell)/.test(n) || /(usb|enc|b64|remote)/.test(msg))
+    return "Medium";
   return "Low";
 };
 
-// Map /api/events → your columns: Timestamp | User | Device | Event | Severity
+const fmtTs = (ts) => {
+  try {
+    return ts ? new Date(ts).toLocaleString() : "-";
+  } catch {
+    return ts || "-";
+  }
+};
+
+// Map GET /api/events → rows: Timestamp | User | Device | Event | Severity
 function mapEventsToRows(events = []) {
   return events.map((e, i) => ({
-    timestamp: e.received_at || e.timestamp || new Date().toISOString(),
-    user: e.columns?.username || e.columns?.user || "-",   // best-effort
+    timestamp: fmtTs(e.received_at || e.timestamp),
+    user: e.columns?.username || e.columns?.user || "-", // best-effort
     device: e.hostIdentifier || "-",
     event: e.name || "-",
     severity: inferSeverity(e.name, e.columns),
@@ -25,19 +36,20 @@ function mapEventsToRows(events = []) {
   }));
 }
 
-// Map /api/alerts → your columns. Alerts already have severity.
+// Map GET /api/alerts → rows (backend already includes severity & event_type)
 function mapAlertsToRows(alerts = []) {
   return alerts.map((a) => ({
-    timestamp: a.timestamp || new Date().toISOString(),
-    user: a.event_details?.columns?.username || "-",       // may not exist
+    timestamp: fmtTs(a.timestamp),
+    user: "-", // backend alert doesn't carry a user field
     device: a.laptop || "-",
-    event: a.event_type || (a.reasons?.[0] ?? "Alert"),
-    severity: (a.severity || "HIGH").slice(0,1) + (a.severity || "HIGH").slice(1).toLowerCase(), // HIGH→High
+    event: a.event_type || "Alert",
+    severity: String(a.severity || "HIGH").toUpperCase().slice(0, 1) +
+      String(a.severity || "HIGH").toLowerCase().slice(1), // HIGH→High
     _id: a.id,
   }));
 }
 
-/* ---------- reusable table stays the same (with empty state) ---------- */
+/* ---------- reusable table ---------- */
 
 const AlertTable = ({ title, columns, data, loading }) => (
   <div className="alert-panel">
@@ -67,7 +79,7 @@ const AlertTable = ({ title, columns, data, loading }) => (
   </div>
 );
 
-/* ------------------------- live page ------------------------- */
+/* ------------------------- page ------------------------- */
 
 export default function AlertsPage() {
   const [allLogs, setAllLogs] = useState([]);
@@ -85,9 +97,10 @@ export default function AlertsPage() {
         setLoadingEvents(true);
         setLoadingAlerts(true);
 
+        // Supported by backend + new api client:
         const [eventsRes, alertsRes] = await Promise.all([
-          api.events({ limit: 200 }),      // /api/events
-          api.alerts({ limit: 200 }),      // /api/alerts
+          api.events({ limit: 200 }), // GET /api/events?limit=200
+          api.alerts({ limit: 200 }), // GET /api/alerts?limit=200
         ]);
 
         if (!mounted) return;
@@ -97,7 +110,10 @@ export default function AlertsPage() {
       } catch (e) {
         if (mounted) setError(e?.message || "Failed to load alerts");
       } finally {
-        if (mounted) { setLoadingEvents(false); setLoadingAlerts(false); }
+        if (mounted) {
+          setLoadingEvents(false);
+          setLoadingAlerts(false);
+        }
       }
     };
 
@@ -106,11 +122,8 @@ export default function AlertsPage() {
     return () => { mounted = false; clearInterval(id); };
   }, []);
 
-  // Optional: filter the “all logs” table to show most recent first
-  const allLogsDesc = useMemo(
-    () => [...allLogs].reverse(),
-    [allLogs]
-  );
+  // Show most recent first in “All Log Data”
+  const allLogsDesc = useMemo(() => [...allLogs].reverse(), [allLogs]);
 
   return (
     <div className="alerts-container">

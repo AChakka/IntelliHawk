@@ -14,14 +14,15 @@ body {
   padding: 20px;
   height: calc(100vh - 40px); /* full height minus padding */
   box-sizing: border-box;
+  color: #ffffff;
 }
 
 .alert-panel {
   flex: 1;
-  background-color: #ffffff;
-  border-radius: 12px;
+  background-color: #0d1b2a;
+  border-radius: 15px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  padding: 20px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -30,7 +31,7 @@ body {
 .panel-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #0b3d91;
+  color: #1d9bf0;
   margin-bottom: 15px;
 }
 
@@ -56,11 +57,11 @@ body {
 }
 
 .alert-table tbody tr:nth-child(even) {
-  background-color: #f2f6fc;
+  background-color: #f2f6fc00;
 }
 
 .alert-table tbody tr:hover {
-  background-color: #dbe7fb;
+  background-color: #0d1b2a;
 }
 
 .alert-table th {
