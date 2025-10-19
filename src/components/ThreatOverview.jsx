@@ -78,10 +78,10 @@ export default function ThreatOverview() {
               <PieChart>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#ffffffff",
+                    backgroundColor: "#020000ff",
                     border: "1px solid #1e293b",
                     borderRadius: "8px",
-                    color: "#fff",
+                    color: "#ffffff",
                   }}
                 />
                 <Pie
