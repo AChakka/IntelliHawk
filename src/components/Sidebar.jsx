@@ -9,6 +9,7 @@ import {
   faChartLine,
   faGear,
   faPeopleGroup,
+  faComputer,
 } from '@fortawesome/free-solid-svg-icons';
 import IntellihawkLogo from "../assets/IntellihawkLogoClear.png";
 export default function Sidebar({ isOpen, onClose }) {
@@ -20,6 +21,7 @@ export default function Sidebar({ isOpen, onClose }) {
     { name: 'Roles', path: '/roles', icon: faPeopleGroup },
     { name: 'Risk Assessment', path: '/alerts', icon: faChartLine },
     { name: 'Security Center', path: '/security-center', icon: faShieldHalved },
+    { name: 'Vendor Assessment', path: '/Agent', icon: faComputer },
     { name: 'Settings', path: '/settings', icon: faGear },
   ];
 

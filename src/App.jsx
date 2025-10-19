@@ -10,6 +10,7 @@ import Users from './components/Users';
 import Alerts from './components/Alerts';
 import SecurityCenter from './components/SecurityCenter';
 import Roles from './components/Roles';
+import Agent from './components/agent';
 import Settings from './components/Settings';
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -33,7 +34,8 @@ function App() {
               <Route path="/alerts" element={<Alerts />} />
               <Route path="/security-center" element={<SecurityCenter />} />
               <Route path="/Roles" element={<Roles />} />
-              <Route path="/settings" element={<Settings />} />
+              <Route path="/Agent" element={<Agent />} />
+             <Route path="/settings" element={<Settings />} />
             </Routes>
           </div>
         </div>

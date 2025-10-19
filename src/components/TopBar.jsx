@@ -12,7 +12,6 @@ export default function TopBar() {
       </div>
 
       <div className="topbar-right">
-        <button className="tb-btn">+ New Report</button>
 
         <button className="tb-icon" title="Notifications">
           <i className="fas fa-bell"></i>
