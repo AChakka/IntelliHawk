@@ -1,12 +1,17 @@
+// src/components/SecurityCenter.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
 import "./securityCenter.css";
 
 /** ---------- helpers to map API → your table shape ---------- **/
 
+const fmtTs = (ts) => {
+  try { return ts ? new Date(ts).toLocaleString() : "-"; }
+  catch { return ts || "-"; }
+};
+
 // Turn /api/events into rows for the SysLog table
 function eventsToSysLogs(events = []) {
-  // We’ll create a LEVEL from the event name (you can tweak this easily)
   const inferLevel = (name = "") => {
     const n = String(name).toLowerCase();
     if (["error", "failed"].some(w => n.includes(w))) return "ERROR";
@@ -16,7 +21,7 @@ function eventsToSysLogs(events = []) {
 
   return events.map((e, idx) => ({
     id: idx + 1,
-    timestamp: e.received_at || e.timestamp || new Date().toISOString(),
+    timestamp: fmtTs(e.received_at || e.timestamp),
     level: inferLevel(e.name),
     source: e.columns?.source || e.name || "event",
     message:
@@ -30,21 +35,20 @@ function eventsToSysLogs(events = []) {
 
 // Turn /api/alerts into rows for the Actions table
 function alertsToActions(alerts = []) {
-  // Map severity → a simple status pill in your UI
   const sevToStatus = (sev = "HIGH") =>
-    sev === "CRITICAL" ? "failed" : "pending"; // you can add "success" if you ever have it
+    sev === "CRITICAL" ? "failed" : "pending";
 
   return alerts.map((a, idx) => ({
     id: a.id ?? idx + 1,
-    time: a.timestamp,
-    user: "system", // backend doesn’t return actor; show system
+    time: fmtTs(a.timestamp),
+    user: "system",
     action: a.event_type || "Security response",
     target: a.laptop || "—",
     status: sevToStatus(a.severity),
   }));
 }
 
-/** ---------------- presentational bits (unchanged) ---------------- **/
+/** ---------------- presentational bits ---------------- **/
 
 function SectionHeader({ title }) {
   return (
@@ -141,8 +145,8 @@ export default function SecurityCenter() {
       try {
         setLoading(true);
         const [eventsRes, alertsRes] = await Promise.all([
-          api.events(100),   // /api/events
-          api.alerts(100),   // /api/alerts
+          api.events({ limit: 200 }), // ✅ new api signature
+          api.alerts({ limit: 200 }), // ✅ new api signature
         ]);
 
         if (!mounted) return;
@@ -159,7 +163,6 @@ export default function SecurityCenter() {
 
     load();
 
-    // Optional: refresh regularly
     const id = setInterval(load, 10000);
     return () => { mounted = false; clearInterval(id); };
   }, []);

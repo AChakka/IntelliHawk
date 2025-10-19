@@ -57,7 +57,7 @@ body {
 }
 
 .alert-table tbody tr:nth-child(even) {
-  background-color: #f2f6fc;
+  background-color: #f2f6fc00;
 }
 
 .alert-table tbody tr:hover {
