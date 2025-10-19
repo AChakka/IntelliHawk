@@ -109,7 +109,7 @@ export default function ThreatOverview() {
                   className="legend-dot"
                   style={{ backgroundColor: COLORS[i] }}
                 />
-                {entry.name} ({entry.value}%)
+                {/* {entry.name} ({entry.value}%) */}
               </div>
             ))}
           </div>

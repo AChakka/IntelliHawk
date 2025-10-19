@@ -14,25 +14,21 @@ function parseIso(d) {
   }
 }
 
-// Backend returns per-user counters + risk_score + first_seen/last_seen.
-// Map to the UI model this page expects.
 function mapApiToUi(apiUsers = []) {
   return apiUsers.map((u, i) => {
     const name = norm(u.laptop_name) || `Device ${i + 1}`;
     const lastSeen = parseIso(u.last_seen);
     const isActive = lastSeen && Date.now() - lastSeen.getTime() < 15 * 60 * 1000;
-
-    // bucketize numeric risk_score (0..1) to low/medium/high
     const r = Number(u.risk_score ?? 0);
     const risk = r >= 0.7 ? "high" : r >= 0.5 ? "medium" : "low";
 
     return {
-      id: name,               // stable key across refreshes
+      id: name,
       name,
-      role: "Endpoint",       // we don’t have roles from backend
+      role: "Endpoint",
       status: isActive ? "active" : "inactive",
-      risk,                   // "low" | "medium" | "high"
-      _raw: u,
+      risk,
+      _raw: { ...u, source: "api" },
     };
   });
 }
@@ -85,7 +81,9 @@ function AllUsersGrid({ users }) {
               <span className="role">{u.role}</span>
             </div>
             <div className="card-badges">
-              <Pill tone={u.status === "active" ? "success" : "muted"}>{u.status}</Pill>
+              <Pill tone={u.status === "active" ? "success" : "muted"}>
+                {u.status}
+              </Pill>
               <Pill tone={u.risk}>{u.risk} risk</Pill>
             </div>
           </div>
@@ -94,6 +92,50 @@ function AllUsersGrid({ users }) {
     </div>
   );
 }
+
+// ---------- dummy users ----------
+const DUMMY_USERS = [
+  {
+    id: "dummy-jdoe",
+    name: "John Jaquilo",
+    role: "Analyst",
+    status: "inactive",
+    risk: "low",
+    _raw: { source: "dummy" },
+  },
+  {
+    id: "dummy-jsmith",
+    name: "Geronimo Stilton",
+    role: "Engineer",
+    status: "inactive",
+    risk: "medium",
+    _raw: { source: "dummy" },
+  },
+  {
+    id: "dummy-mbrown",
+    name: "Michael Carrington",
+    role: "Security",
+    status: "inactive",
+    risk: "medium", // changed from high → medium
+    _raw: { source: "dummy" },
+  },
+  {
+    id: "dummy-akhan",
+    name: "Sher P.P. Khan",
+    role: "Intern",
+    status: "inactive",
+    risk: "low",
+    _raw: { source: "dummy" },
+  },
+  {
+    id: "dummy-tonka",
+    name: "Tonka Jahari",
+    role: "Teller",
+    status: "inactive",
+    risk: "high",
+    _raw: { source: "dummy" },
+  },
+];
 
 // ---------- component ----------
 export default function Users() {
@@ -108,9 +150,10 @@ export default function Users() {
       try {
         if (mounted) setLoading(true);
         setErr("");
-        const data = await api.users(); // GET /api/users
+        const data = await api.users();
         const uiUsers = mapApiToUi(data.users || []);
-        if (mounted) setUsers(uiUsers);
+
+        if (mounted) setUsers([...uiUsers, ...DUMMY_USERS]);
       } catch (e) {
         if (mounted) setErr(e?.message || "Failed to load users");
       } finally {
@@ -119,7 +162,7 @@ export default function Users() {
     }
 
     load();
-    const id = setInterval(load, 10000); // refresh every 10s
+    const id = setInterval(load, 10000);
     return () => {
       mounted = false;
       clearInterval(id);
@@ -127,12 +170,17 @@ export default function Users() {
   }, []);
 
   const activeUsers = useMemo(
-    () => users.filter((u) => u.status === "active"),
+    () => users.filter((u) => u.status === "active" && u._raw?.source === "api"),
     [users]
   );
 
+  // Highest Risk now includes API + dummy high-risk users (Tonka only now)
   const highestRisk = useMemo(
-    () => [...users].sort((a, b) => riskOrder[b.risk] - riskOrder[a.risk]).slice(0, 10),
+    () =>
+      users
+        .filter((u) => u.risk === "high")
+        .sort((a, b) => riskOrder[b.risk] - riskOrder[a.risk])
+        .slice(0, 10),
     [users]
   );
 
@@ -180,8 +228,18 @@ export default function Users() {
       </div>
 
       <button type="button" className="fab" aria-label="Add a user" title="Add a user">
-        <svg className="fab-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <svg
+          className="fab-icon"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path
+            d="M12 5v14M5 12h14"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
         </svg>
       </button>
     </div>

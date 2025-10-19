@@ -26,6 +26,7 @@
   font-family: var(--font);
   box-sizing: border-box;
   overflow-y: auto;
+  border-radius: 16px 16px 0 0;
 }
 
 /* ---------- INNER CONTENT ---------- */

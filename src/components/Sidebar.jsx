@@ -10,7 +10,7 @@ import {
   faGear,
   faPeopleGroup,
 } from '@fortawesome/free-solid-svg-icons';
-import IntellihawkLogo from "../assets/IntellihawkLogo.png";
+import IntellihawkLogo from "../assets/IntellihawkLogoClear.png";
 export default function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
 

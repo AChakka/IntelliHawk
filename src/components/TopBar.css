@@ -14,7 +14,7 @@
   position: fixed;
   top: 20px;
   left: 280px;
-  right: 200px;
+  right: 15px;
   height: 70px;
   display: flex;
   align-items: center;
@@ -41,7 +41,7 @@
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 40px;
 }
 
 

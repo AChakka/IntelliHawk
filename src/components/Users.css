@@ -15,14 +15,17 @@
 
 /* Layout */
 .users-page {
-  min-height: 100dvh;
+  min-height: 100vh;
+  width: 1000px;
   background: #0d1b2a;
-  padding: 16px;
+  padding: 25px 48px;
   position: relative;
+  border-radius: 16px 16px 0 0;
 }
 
 .container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -151,6 +154,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 16px;
+  width: 100%;
 }
 
 .card {

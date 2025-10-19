@@ -22,10 +22,11 @@ body {
   background-color: var(--bg-dark);
   color: var(--text-light);
   min-height: 82vh;
-  padding: 30px 60px;
+  padding: 30px 120px;
   font-family: var(--font);
   display: flex;
   flex-direction: column;
+  border-radius: 16px 16px 0 0;
 }
 
 .roles-header {

@@ -1,21 +1,32 @@
-/* Layout: wide line chart left, pie + summary right */
 .threat-grid {
   display: grid;
-  grid-template-columns: minmax(500px, 1.8fr) minmax(400px, 1fr); /* smaller base widths */
-  gap: 24px;            /* reduce spacing between cards */
-  width: min(1200px, 100%); /* cap total layout width */
-  margin: 40px auto 0;
+  grid-template-columns: minmax(500px, 1.8fr) minmax(400px, 1fr);
+  gap: 20px;
+
+  width: 100%;
+  max-width: 100%;
+
+  /* Center or left-align properly */
+  margin: 20px 0 0 0;        /* no auto margin */
+  padding: 0;                /* remove side padding */
+  justify-content: start;    /* align the grid to the left */
   align-items: start;
-  padding: 0 10px;
+
+  box-sizing: border-box;
 }
 
+
 .card {
-  background-color: #0d1b2a !important;  /* deep blue */
-  color: #ffffff !important;             /* white text */
+  background-color: #0d1b2a !important;
+  color: #ffffff !important;
+}
+
+.card--main {
+  padding-right: 100px;
 }
 
 .card * {
-  color: #ffffff !important;             /* ensures inner text stays visible */
+  color: #ffffff !important;
 }
 
 .section-title {
@@ -24,11 +35,11 @@
 
 /* Chart areas — reduce heights */
 .chart-wrap--main {
-  height: 360px; /* smaller line chart */
+  height: 360px;
 }
 
 .chart-wrap--side {
-  height: 220px; /* smaller pie chart */
+  height: 220px;
 }
 
 /* Stack vertically on smaller screens */
