@@ -38,11 +38,11 @@ def get_user_data(laptop_name):
 def calculate_risk_score(user):
     score = 0.0
     score += min(user['suspicious_programs_used'] * 0.15, 0.40)
-    score += min(user['failed_logins'] * 0.10, 0.25)
+    score += min(user['failed_logins'] * 0.20, 0.45)
     score += min(user['file_access_attempts'] * 0.05, 0.20)
     score += min(user['sensitive_file_access'] * 0.12, 0.30)
     score += min(user['suspicious_network_activity'] * 0.08, 0.25)
-    score += min(user['privilege_escalation_attempts'] * 0.20, 0.50)
+    score += min(user['privilege_escalation_attempts'] * 0.80, 0.95)
     return min(score, 1.0)
 
 

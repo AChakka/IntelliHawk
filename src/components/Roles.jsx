@@ -4,7 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recha
 
 const rolesData = [
   {
-    role: "Human Recources",
+    role: "Human Resources",
     lead: "Alice Chen",
     users: ["Dylan Morris", "Sofia Patel", "Marcus Reed", "Rachel Raddish"],
     riskScores: [
@@ -78,7 +78,7 @@ export default function Roles() {
     <div className="role-logs">
       <h4>High Risk Logs</h4>
       <ul>
-        {role.role === "Human Recources" && (
+        {role.role === "Human Resources" && (
           <>
             <li>🔴 Unusual login from Brazil - Rachel Raddish</li>
             <li>🔴 Multiple failed password attempts - Marcus Reed</li>
